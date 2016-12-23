@@ -1,5 +1,5 @@
 """
-base.py
+xbee.py
 
 By Paul Malmsten, 2010
 Inspired by code written by Amit Synderman and Marco Sangalli
@@ -107,7 +107,7 @@ class XBeeBase(threading.Thread):
                 # Unexpected thread quit.
                 if self._error_callback:
                     self._error_callback(e)
-
+                break
 
     def _wait_for_frame(self):
         """
@@ -146,19 +146,20 @@ class XBeeBase(threading.Thread):
                     if len(byte) == 1:
                         frame.fill(byte)
 
-                try:
+                #try:
                     # Try to parse and return result
-                    frame.parse()
+                frame.parse()
 
                     # Ignore empty frames
-                    if len(frame.data) == 0:
-                        frame = APIFrame()
-                        continue
+                if len(frame.data) == 0:
+                    frame = APIFrame()
+                    continue
 
-                    return frame
-                except ValueError:
+                return frame
+                #except ValueError:
                     # Bad frame, so restart
-                    frame = APIFrame(escaped=self._escaped)
+		    #print '[except ValueError]\n'
+                    #frame = APIFrame(escaped=self._escaped)
 
     def _build_command(self, cmd, **kwargs):
         """
@@ -265,9 +266,9 @@ class XBeeBase(threading.Thread):
                 # Store the number of bytes specified
 
                 # Are we trying to read beyond the last data element?
-                expected_len = index + field['len']
-                if expected_len > len(data):
-                    raise ValueError("Response packet was shorter than expected; expected: %d, got: %d bytes" % (expected_len, len(data)))
+                if index + field['len'] > len(data):
+                    raise ValueError(
+                        "Response packet was shorter than expected")
 
                 field_data = data[index:index + field['len']]
                 info[field['name']] = field_data
@@ -287,7 +288,9 @@ class XBeeBase(threading.Thread):
 
         # If there are more bytes than expected, raise an exception
         if index < len(data):
-            raise ValueError("Response packet was longer than expected; expected: %d, got: %d bytes" % (index, len(data)))
+            raise ValueError(
+                "Response packet was longer than expected; expected: %d, got: %d bytes" % (index,
+                                                                                           len(data)))
 
         # Apply parsing rules if any exist
         if 'parsing' in packet:
@@ -297,6 +300,7 @@ class XBeeBase(threading.Thread):
                     # Apply the parse function to the indicated field and
                     # replace the raw data with the result
                     info[parse_rule[0]] = parse_rule[1](self, info)
+
         return info
 
     def _parse_samples_header(self, io_bytes):

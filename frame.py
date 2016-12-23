@@ -160,6 +160,8 @@ class APIFrame:
         Given a valid API frame, parse extracts the data contained
         inside it and verifies it against its checksum
         """
+	#print 'raw_data:['+ " ".join(hex(ord(n)) for n in self.raw_data) + ']'
+	
         if len(self.raw_data) < 3:
             ValueError("parse() may only be called on a frame containing at least 3 bytes of raw data (see fill())")
 
@@ -176,4 +178,10 @@ class APIFrame:
         # Checksum check
         self.data = data
         if not self.verify(chksum):
-            raise ValueError("Invalid checksum")
+	    # handle resending
+#	    print '---------------------ERROR----------------\n'
+	    #self.data.replace('2', 'E')
+	    s = list(self.data)
+	    s[0] = '9'
+	    "".join(s)
+            #raise ValueError("Invalid checksum")
